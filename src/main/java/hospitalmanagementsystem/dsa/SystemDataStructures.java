@@ -4,105 +4,132 @@
  */
 package hospitalmanagementsystem.dsa;
 
+import hospitalmanagementsystem.database.AppointmentDAO;
+import hospitalmanagementsystem.database.DataBaseConnection;
+import hospitalmanagementsystem.database.PatientDAO;
 import hospitalmanagementsystem.model.Appointments;
 import hospitalmanagementsystem.model.Doctor;
 import hospitalmanagementsystem.model.Patient;
-
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.PriorityQueue;
 
 public class SystemDataStructures {
-    private final PatientBST patientTree;
-    private final PriorityQueue<Appointments> appointmentQueue;
-    private final Map<Integer, Patient> patientHashTable;
-    private final Map<Integer, Doctor> doctorTable;
+    // The one shared copy used by every screen, so patients and appointments are kept when you switch screens
+    private static SystemDataStructures instance;
+
+    private PriorityQueue<Appointments> appointments;
+    private List<Appointments> history;
+    private PatientBST patientBST;
+
+    // Classes that save and load patients and appointments in the database
+    private PatientDAO patientDAO = new PatientDAO();
+    private AppointmentDAO appointmentDAO = new AppointmentDAO();
 
     public SystemDataStructures() {
-        this.patientTree = new PatientBST();
-        this.appointmentQueue = new PriorityQueue<>();
-        this.patientHashTable = new HashMap<>();
-        this.doctorTable = new HashMap<>();
+        appointments = new PriorityQueue<>();
+        history = new ArrayList<>();
+        patientBST = new PatientBST();
     }
 
-    public void addPatient(int id, String name, int age) {
-        if (verifyPatientExists(id)) return;
-
-        // FIXED: Patient constructor requires 4 arguments (id, name, age, disease)
-        Patient p = new Patient(id, name, age, "N/A");
-        patientTree.insert(p);
-        patientHashTable.put(id, p);
+    // Returns the shared instance, creating it and loading the saved data the first time it is asked for
+    public static synchronized SystemDataStructures getInstance() {
+        if (instance == null) {
+            instance = new SystemDataStructures();
+            instance.loadFromDatabase();
+        }
+        return instance;
     }
 
-    public void addPatient(Patient p) {
-        if (p == null || verifyPatientExists(p.getId())) return;
+    // Creates the tables if needed, then fills the BST, priority queue and history from the saved rows
+    private void loadFromDatabase() {
+        DataBaseConnection.initialize();
 
-        patientTree.insert(p);
-        patientHashTable.put(p.getId(), p);
+        for (Patient p : patientDAO.getAll()) {
+            patientBST.insert(p);
+        }
+
+        for (Appointments a : appointmentDAO.getAll()) {
+            appointments.offer(a);
+            history.add(a);
+
+            // Links the appointment back to its patient
+            try {
+                Patient p = patientBST.search(Integer.parseInt(a.getPatientId()));
+                if (p != null) {
+                    p.getAppointments().add(a);
+                }
+            } catch (NumberFormatException e) {
+                System.err.println("Skipping patient link for appointment with ID " + a.getAppointmentId());
+            }
+        }
+    }
+    
+    // Verify if a patient exists by ID (Hashing / BST check)
+    public boolean verifyPatientExists(int patientId) {
+        // If you are using your PatientBST or a hash map for verification:
+        return patientBST.search(patientId) != null; 
     }
 
-    public void deletePatient(int id) {
-        if (!verifyPatientExists(id)) return;
-        patientHashTable.remove(id);
-        patientTree.remove(id);
+    // Finds a patient in the BST by ID; returns null if there is none
+    public Patient findPatient(int patientId) {
+        return patientBST.search(patientId);
     }
 
-    public boolean verifyPatientExists(int id) {
-        return patientHashTable.containsKey(id);
-    }
-
-    public Patient getPatient(int id) {
-        return patientHashTable.get(id);
-    }
-
-    public Collection<Patient> getAllPatients() {
-        return patientHashTable.values();
-    }
-
-    public void addDoctor(int id, String name, String specialty) {
-        doctorTable.put(id, new Doctor(id, name, specialty));
-    }
-
-    public void addDoctor(Doctor doc) {
-        if (doc != null) {
-            doctorTable.put(doc.getId(), doc);
+    // Add a new patient to the system
+    public void addPatient(Patient patient) {
+        if (patient != null) {
+            patientBST.insert(patient);
+            // Also saves the patient in the database
+            patientDAO.insert(patient);
         }
     }
 
-    public void deleteDoctor(int id) {
-        doctorTable.remove(id);
+    // Adds appointment to the priority queue and history list
+    public void addAppointment(Appointments a, Patient p, Doctor d) {
+        // Saves the appointment in the database first, so it gets its database ID
+        appointmentDAO.insert(a);
+
+        appointments.offer(a);
+        history.add(a);
+
+        // Adds appointment to the patient if patient exists
+        if (p != null) {
+            p.getAppointments().add(a);
+        }
+
+        // Assigns patient to the doctor if doctor exists (Parsed to int to match Doctor model)
+        if (d != null) {
+            try {
+                d.assignPatient(Integer.parseInt(a.getPatientId()));
+            } catch (NumberFormatException e) {
+                // Fallback if patientId contains letters; adjust Doctor.java if needed
+                System.err.println("Error parsing patient ID to int: " + e.getMessage());
+            }
+        }
     }
 
-    public Doctor getDoctor(int id) {
-        return doctorTable.get(id);
+    // Removes an appointment from the priority queue, the history list and the database
+    public void removeAppointment(Appointments a) {
+        appointments.remove(a);
+        history.remove(a);
+        if (a.getAppointmentId() > 0) {
+            appointmentDAO.delete(a.getAppointmentId());
+        }
     }
 
-    public Collection<Doctor> getAllDoctors() {
-        return doctorTable.values();
-    }
-
-    public void scheduleAppointment(int apptId, int patientId, int doctorId, String date, int urgency) {
-        if (!verifyPatientExists(patientId) || !doctorTable.containsKey(doctorId)) return;
-
-        Appointments appt = new Appointments(apptId, patientId, doctorId, date, urgency);
-        appointmentQueue.add(appt);
-
-        // Note: If addAppointmentId or assignPatient exist in your model classes, 
-        // you can uncomment these lines.
-        // patientHashTable.get(patientId).addAppointmentId(apptId);
-        // doctorTable.get(doctorId).assignPatient(patientId);
-    }
-
+    // Gets the next highest-priority appointment
     public Appointments processNextAppointment() {
-        return appointmentQueue.poll();
+        return appointments.poll();
     }
 
-    public boolean cancelAppointment(int apptId) {
-        return appointmentQueue.removeIf(appt -> appt.getAppointmentId() == apptId);
+    // Gets all appointment records
+    public List<Appointments> getAppointmentHistory() {
+        return history;
     }
 
-    public PriorityQueue<Appointments> getAppointmentQueue() {
-        return appointmentQueue;
+    // Gets the appointment priority queue
+    public PriorityQueue<Appointments> getAppointmentPriorityQueue() {
+        return appointments;
     }
 }
