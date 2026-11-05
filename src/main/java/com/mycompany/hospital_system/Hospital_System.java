@@ -13,6 +13,6 @@ public class Hospital_System {
     public static void main(String[] args) {
         System.out.println("Hello World!");
         System.out.println("Nagcommit uli ako");
-        System.out.println("sige lang");
+        System.out.println("goodnight");
     }
 }
