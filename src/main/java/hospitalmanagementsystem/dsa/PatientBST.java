@@ -1,14 +1,10 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
+
 package hospitalmanagementsystem.dsa;
 
 import hospitalmanagementsystem.model.Patient;
 
 public class PatientBST {
 
-    // Node stores one patient in the BST
     private class Node {
         Patient patient;
         Node left, right;
@@ -20,73 +16,103 @@ public class PatientBST {
 
     private Node root;
 
-    // Adds a patient to the BST
-    public void insert(Patient p) {
+    // Inserts a patient into the BST
+    public boolean insert(Patient p) {
+
+        if (p == null || search(p.getId()) != null) {
+            return false;
+        }
+
         root = insert(root, p);
+        return true;
     }
 
     // Finds the correct position for a patient
     private Node insert(Node n, Patient p) {
-        if (n == null)
-            return new Node(p);
 
-        if (p.getId() < n.patient.getId())
+        if (n == null) {
+            return new Node(p);
+        }
+
+        if (p.getId() < n.patient.getId()) {
             n.left = insert(n.left, p);
-        else if (p.getId() > n.patient.getId())
+        } else if (p.getId() > n.patient.getId()) {
             n.right = insert(n.right, p);
+        }
 
         return n;
     }
 
-    // Searches for a patient by ID
+    // Searches for a patient using their ID
     public Patient search(int id) {
+
         Node n = root;
 
         while (n != null) {
-            if (id == n.patient.getId())
-                return n.patient;
 
-            n = id < n.patient.getId() ? n.left : n.right;
+            if (id == n.patient.getId()) {
+                return n.patient;
+            }
+
+            if (id < n.patient.getId()) {
+                n = n.left;
+            } else {
+                n = n.right;
+            }
         }
 
         return null;
     }
 
     // Removes a patient from the BST
-    public void remove(int id) {
+    public boolean remove(int id) {
+
+        if (search(id) == null) {
+            return false;
+        }
+
         root = remove(root, id);
+        return true;
     }
 
     // Finds and removes the patient
     private Node remove(Node n, int id) {
-        if (n == null)
-            return null;
 
-        if (id < n.patient.getId())
+        if (n == null) {
+            return null;
+        }
+
+        if (id < n.patient.getId()) {
             n.left = remove(n.left, id);
 
-        else if (id > n.patient.getId())
+        } else if (id > n.patient.getId()) {
             n.right = remove(n.right, id);
 
-        else {
-            // If there is no left child
-            if (n.left == null)
+        } else {
+
+            if (n.left == null) {
                 return n.right;
+            }
 
-            // If there is no right child
-            if (n.right == null)
+            if (n.right == null) {
                 return n.left;
+            }
 
-            // Finds the smallest value on the right
             Node min = n.right;
 
-            while (min.left != null)
+            while (min.left != null) {
                 min = min.left;
+            }
 
             n.patient = min.patient;
             n.right = remove(n.right, min.patient.getId());
         }
 
         return n;
+    }
+
+    // Checks whether the BST contains a patient
+    public boolean contains(int id) {
+        return search(id) != null;
     }
 }
