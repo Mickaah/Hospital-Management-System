@@ -3,16 +3,17 @@
  */
 
 package com.mycompany.hospital_system;
-
+import hospitalmanagementsystem.GUI.HospitalSysApp;
 /**
  *
- * @author Mikeyks
+ * @author Micaela Magpili
  */
-public class Hospital_System {
+public class HospitalSys {
 
     public static void main(String[] args) {
-        System.out.println("Hello World!");
-        System.out.println("Nagcommit uli ako");
-        System.out.println("goodnight");
+        HospitalSysApp app = new HospitalSysApp();
+        app.setVisible(true);
+
+        
     }
 }
