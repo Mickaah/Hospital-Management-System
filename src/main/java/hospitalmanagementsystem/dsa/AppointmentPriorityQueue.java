@@ -1,54 +1,67 @@
-/**
- *
- * @author Guce Paul
- */
+
 package hospitalmanagementsystem.dsa;
 
 import hospitalmanagementsystem.model.Appointments;
 import java.util.PriorityQueue;
-import java.util.Comparator;
-import java.util.List;
 import java.util.ArrayList;
-
-import hospitalmanagementsystem.model.Appointments;
-import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
-import java.util.PriorityQueue;
+import java.util.Collections;
 
 public class AppointmentPriorityQueue {
-    
+
     private PriorityQueue<Appointments> appointmentQueue;
 
     public AppointmentPriorityQueue() {
-        // FIXED: Using getNumericUrgency() instead of getUrgencyLevel() to handle the String properly
-        appointmentQueue = new PriorityQueue<>(
-            Comparator.comparingInt(Appointments::getNumericUrgency).reversed()
-        );
+
+        appointmentQueue = new PriorityQueue<>();
     }
 
-    // Add an appointment to the priority queue
+    // Adds an appointment to the queue
     public void addAppointment(Appointments appointment) {
-        appointmentQueue.offer(appointment);
+
+        if (appointment != null) {
+            appointmentQueue.offer(appointment);
+        }
     }
 
-    // Retrieve and remove the most urgent appointment (e.g., for doctor consultation)
+    // Gets and removes the highest-priority appointment
     public Appointments processNextAppointment() {
+
         return appointmentQueue.poll();
     }
 
-    // View the most urgent appointment without removing it
+    // Views the highest-priority appointment
     public Appointments peekNextAppointment() {
+
         return appointmentQueue.peek();
     }
 
-    // Check if the priority queue is empty
+    // Checks whether the queue is empty
     public boolean isEmpty() {
+
         return appointmentQueue.isEmpty();
     }
 
-    // Return all queued appointments as a List (useful for refreshing UI tables)
+    // Returns appointments sorted by priority
     public List<Appointments> getAllAppointments() {
-        return new ArrayList<>(appointmentQueue);
+
+        List<Appointments> list =
+                new ArrayList<>(appointmentQueue);
+
+        Collections.sort(list);
+
+        return list;
+    }
+
+    // Returns the number of queued appointments
+    public int size() {
+
+        return appointmentQueue.size();
+    }
+
+    // Removes an appointment from the queue
+    public boolean removeAppointment(Appointments appointment) {
+
+        return appointmentQueue.remove(appointment);
     }
 }
