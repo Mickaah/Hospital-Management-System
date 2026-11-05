@@ -36,7 +36,7 @@ public class AppointmentManager {
     public List<Appointments> getAllAppointments() {
         return appointmentHistory;
     }
-
+//i love you
     public List<Appointments> searchAppointments(String query) {
         List<Appointments> results = new ArrayList<>();
         for (Appointments appt : appointmentHistory) {
