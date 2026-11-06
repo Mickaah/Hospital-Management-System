@@ -1,7 +1,3 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package hospitalmanagementsystem.GUI;
 
 import hospitalmanagementsystem.database.AppointmentDAO;
@@ -18,6 +14,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import javax.swing.*;
+import static javax.swing.WindowConstants.EXIT_ON_CLOSE;
 import javax.swing.table.DefaultTableModel;
 
 /**
@@ -25,18 +22,22 @@ import javax.swing.table.DefaultTableModel;
  * @author Mikeyks
  */
 public class Patienttab extends JFrame implements ActionListener {
-    private JLabel txtTitle, patname, patage, patgenlab, patillness, medhist, apptsched, docappt, patID;
-    private JComboBox<String> patgender, avaibdocs;
-    private JTextField patnameF, patageF, apptschedF, patIDF;
-    private JTextArea patillnessF, medhistF; 
+    private JLabel txtTitle, patname, patage, patgenlab, patillness, medhist, apptsched, docappt, urgencylab;
+    private JComboBox<String> patgender, avaibdocs, urgencyBox;
+    private JTextField patnameF, patageF, apptschedF;
+    private JTextArea patillnessF, medhistF;
     private DefaultTableModel patres;
-    private JTable tab; 
+    private JTable tab;
     private JButton btnBack, btnAdd, btnRemove;
     private JPanel backgroundPanel;
     private ImageIcon image;
-    private String[] gend = {"male", "female", "trans(male/female)"}; 
+    private String[] gend = {"male", "female", "trans(male/female)"};
+    private String[] urgencyLevels = {"1 - Low", "2 - Medium", "3 - High", "4 - Critical"};
     private String[] avaib = {};
-    
+
+    // Standard font so label widths are predictable on every machine
+    private static final String FONT_NAME = "Arial";
+
     private SystemDataStructures systemDataStructures;
 
     public Patienttab() {
@@ -47,153 +48,166 @@ public class Patienttab extends JFrame implements ActionListener {
         this.systemDataStructures = (sharedDataStructures != null) ? sharedDataStructures : new SystemDataStructures();
 
         setTitle("HOSPITAL MANAGEMENT APP");
-        setSize(870, 500);
+        setSize(870, 520);
         setLayout(null);
+
         backgroundPanel = new JPanel();
         backgroundPanel.setLayout(null);
         backgroundPanel.setBackground(new Color(153, 197, 144));
         setContentPane(backgroundPanel);
+
         image = new ImageIcon("src/main/java/hospitalmanagementsystem/GUI/Logo.png");
         Image scaledImage = image.getImage().getScaledInstance(120, 120, Image.SCALE_SMOOTH);
         setIconImage(scaledImage);
-        setVisible(true);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         this.setLocationRelativeTo(null);
-        
+
         txtTitle = new JLabel("Book an Appointment");
         txtTitle.setBounds(10, 5, 280, 50);
-        txtTitle.setFont(new Font("Western", Font.PLAIN, 20));
-        add(txtTitle);
-        
-        patname = new JLabel("Patient's name: ");
-        patname.setBounds(10, 40, 190, 50);
-        patname.setFont(new Font("Western", Font.BOLD, 14));
-        add(patname);
-        
-        patID = new JLabel("Patient's ID: ");
-        patID.setBounds(400, 77, 190, 50);
-        patID.setFont(new Font("Western", Font.BOLD, 14));
-        add(patID);
-        
-        patIDF = new JTextField();
-        patIDF.setBounds(488, 93, 250, 20);
-        patIDF.setFont(new Font("Western", Font.BOLD, 14));
-        add(patIDF);
-        
+        txtTitle.setFont(new Font(FONT_NAME, Font.PLAIN, 20));
+        backgroundPanel.add(txtTitle);
+
+        // ---------- LEFT COLUMN (labels x=10 w=125, fields x=140 w=230) ----------
+        patname = new JLabel("Patient's Name:");
+        patname.setBounds(10, 40, 125, 50);
+        patname.setFont(new Font(FONT_NAME, Font.BOLD, 14));
+        backgroundPanel.add(patname);
+
         patnameF = new JTextField();
-        patnameF.setBounds(120, 55, 250, 20);
-        patnameF.setFont(new Font("Western", Font.BOLD, 14));
-        add(patnameF);
-        
-        patage = new JLabel("patient's age: ");
-        patage.setBounds(10, 60, 200, 50);
-        patage.setFont(new Font("Western", Font.BOLD, 14));
-        add(patage);
-        
+        patnameF.setBounds(140, 55, 230, 20);
+        patnameF.setFont(new Font(FONT_NAME, Font.BOLD, 14));
+        backgroundPanel.add(patnameF);
+
+        patage = new JLabel("Patient's Age:");
+        patage.setBounds(10, 75, 125, 50);
+        patage.setFont(new Font(FONT_NAME, Font.BOLD, 14));
+        backgroundPanel.add(patage);
+
         patageF = new JTextField();
-        patageF.setBounds(110, 75, 250, 20);
-        patageF.setFont(new Font("Western", Font.BOLD, 14));
-        add(patageF);
-        
-        patgenlab = new JLabel("patient's gender: ");
-        patgenlab.setBounds(10, 80, 200, 50);
-        patgenlab.setFont(new Font("Western", Font.BOLD, 14));
-        add(patgenlab);
-        
+        patageF.setBounds(140, 90, 230, 20);
+        patageF.setFont(new Font(FONT_NAME, Font.BOLD, 14));
+        backgroundPanel.add(patageF);
+
+        patgenlab = new JLabel("Patient's Gender:");
+        patgenlab.setBounds(10, 110, 125, 50);
+        patgenlab.setFont(new Font(FONT_NAME, Font.BOLD, 14));
+        backgroundPanel.add(patgenlab);
+
         patgender = new JComboBox<>(gend);
-        patgender.setBounds(133, 97, 200, 20);
-        patgender.setFont(new Font("Western", Font.BOLD, 14));
-        add(patgender);
-        
-        patillness = new JLabel("concern: ");
-        patillness.setBounds(482, 120, 200, 50);
-        patillness.setFont(new Font("Western", Font.BOLD, 14));
-        add(patillness);
-        
-        patillnessF = new JTextArea();
-        patillnessF.setBounds(545, 141, 270, 60);
-        patillnessF.setFont(new Font("Western", Font.BOLD, 14));
-        add(patillnessF);
-        
-        medhist = new JLabel("Previous Medical History: ");
-        medhist.setBounds(10, 120, 200, 50);
-        medhist.setFont(new Font("Western", Font.BOLD, 14));
-        add(medhist);
-        
-        medhistF = new JTextArea();
-        medhistF.setBounds(191, 141, 270, 60);
-        medhistF.setFont(new Font("Western", Font.BOLD, 14));
-        add(medhistF);
-        
-        apptsched = new JLabel("Set Appointment Date (MM/DD/YY): ");
-        apptsched.setBounds(10, 207, 270, 50);
-        apptsched.setFont(new Font("Western", Font.BOLD, 15));
-        add(apptsched);
-        
-        apptschedF = new JTextField();
-        apptschedF.setBounds(260, 220, 350, 30);
-        apptschedF.setFont(new Font("Western", Font.BOLD, 14));
-        add(apptschedF);
-        
-        docappt = new JLabel("See Doctor: ");
-        docappt.setBounds(400, 40, 190, 50);
-        docappt.setFont(new Font("Western", Font.BOLD, 14));
-        add(docappt);
-        
+        patgender.setBounds(140, 125, 230, 20);
+        patgender.setFont(new Font(FONT_NAME, Font.BOLD, 14));
+        backgroundPanel.add(patgender);
+
+        // ---------- RIGHT COLUMN (labels x=400 w=135, fields x=540 w=270) ----------
+        docappt = new JLabel("See Doctor:");
+        docappt.setBounds(400, 40, 135, 50);
+        docappt.setFont(new Font(FONT_NAME, Font.BOLD, 14));
+        backgroundPanel.add(docappt);
+
         avaibdocs = new JComboBox<>(avaib);
-        avaibdocs.setBounds(488, 55, 250, 20);
-        avaibdocs.setFont(new Font("Western", Font.BOLD, 14));
-        add(avaibdocs);
-        
+        avaibdocs.setBounds(540, 55, 270, 20);
+        avaibdocs.setFont(new Font(FONT_NAME, Font.BOLD, 14));
+        backgroundPanel.add(avaibdocs);
+
+        urgencylab = new JLabel("Urgency Level:");
+        urgencylab.setBounds(400, 75, 135, 50);
+        urgencylab.setFont(new Font(FONT_NAME, Font.BOLD, 14));
+        backgroundPanel.add(urgencylab);
+
+        urgencyBox = new JComboBox<>(urgencyLevels);
+        urgencyBox.setBounds(540, 90, 270, 20);
+        urgencyBox.setFont(new Font(FONT_NAME, Font.BOLD, 14));
+        backgroundPanel.add(urgencyBox);
+
+        apptsched = new JLabel("Appointment Date:");
+        apptsched.setBounds(400, 110, 135, 50);
+        apptsched.setFont(new Font(FONT_NAME, Font.BOLD, 14));
+        backgroundPanel.add(apptsched);
+
+        apptschedF = new JTextField();
+        apptschedF.setBounds(540, 125, 270, 20);
+        apptschedF.setFont(new Font(FONT_NAME, Font.BOLD, 14));
+        apptschedF.setToolTipText("Format: YYYY-MM-DD (e.g. 2026-11-20)");
+        backgroundPanel.add(apptschedF);
+
+        // ---------- TEXT AREAS ----------
+        medhist = new JLabel("Previous Medical History:");
+        medhist.setBounds(10, 155, 220, 50);
+        medhist.setFont(new Font(FONT_NAME, Font.BOLD, 14));
+        backgroundPanel.add(medhist);
+
+        medhistF = new JTextArea();
+        JScrollPane scrollMed = new JScrollPane(medhistF);
+        scrollMed.setBounds(10, 195, 380, 60);
+        medhistF.setFont(new Font(FONT_NAME, Font.BOLD, 14));
+        backgroundPanel.add(scrollMed);
+
+        patillness = new JLabel("Patient Concern / Illness:");
+        patillness.setBounds(410, 155, 220, 50);
+        patillness.setFont(new Font(FONT_NAME, Font.BOLD, 14));
+        backgroundPanel.add(patillness);
+
+        patillnessF = new JTextArea();
+        JScrollPane scrollConcern = new JScrollPane(patillnessF);
+        scrollConcern.setBounds(410, 195, 400, 60);
+        patillnessF.setFont(new Font(FONT_NAME, Font.BOLD, 14));
+        backgroundPanel.add(scrollConcern);
+
         loadDoctorsIntoComboBox();
-        
+
         addWindowListener(new WindowAdapter() {
             @Override
             public void windowActivated(WindowEvent e) {
                 loadDoctorsIntoComboBox();
             }
         });
-        
-        patres = new DefaultTableModel(){
+
+        // ---------- TABLE ----------
+        patres = new DefaultTableModel() {
             @Override
             public boolean isCellEditable(int row, int column) {
                 return false;
             }
         };
-        patres.addColumn("patient name:");
-        patres.addColumn("patient age:");
-        patres.addColumn("patient gender:");
-        patres.addColumn("Appointment Date");
-        patres.addColumn("See Doctor:");
-        
+        patres.addColumn("Patient Name");
+        patres.addColumn("Age");
+        patres.addColumn("Gender");
+        patres.addColumn("Date");
+        patres.addColumn("Urgency");
+        patres.addColumn("Doctor");
+
         tab = new JTable(patres);
         tab.getTableHeader().setReorderingAllowed(false);
         tab.getTableHeader().setResizingAllowed(false);
         tab.getTableHeader().setBackground(Color.decode("#bdfdc5"));
         tab.getTableHeader().setForeground(Color.BLACK);
-        
+
         JScrollPane scroll = new JScrollPane(tab);
-        scroll.setBounds(10, 275, 720, 160);
-        scroll.setFont(new Font("Western", Font.PLAIN, 14));
-        add(scroll);
-                
-        btnBack = new JButton("Back");
-        btnBack.setBounds(770, 400, 70, 50);
-        add(btnBack); 
-        
+        scroll.setBounds(10, 275, 810, 130);
+        scroll.setFont(new Font(FONT_NAME, Font.PLAIN, 14));
+        backgroundPanel.add(scroll);
+
+        // ---------- BUTTONS ----------
         btnAdd = new JButton("Add");
-        btnAdd.setBounds(770, 280, 70, 50);
-        add(btnAdd); 
-        
+        btnAdd.setBounds(500, 420, 100, 40);
+        backgroundPanel.add(btnAdd);
+
         btnRemove = new JButton("Remove");
-        btnRemove.setBounds(750, 340, 90, 50);
-        add(btnRemove); 
-        
+        btnRemove.setBounds(610, 420, 100, 40);
+        backgroundPanel.add(btnRemove);
+
+        btnBack = new JButton("Back");
+        btnBack.setBounds(720, 420, 100, 40);
+        backgroundPanel.add(btnBack);
+
         btnBack.addActionListener(this);
         btnAdd.addActionListener(this);
         btnRemove.addActionListener(this);
+
+        // Make window visible at the very END so all components render properly
+        setVisible(true);
     }
-    
+
     private void loadDoctorsIntoComboBox() {
         Object previousSelection = avaibdocs.getSelectedItem();
         avaibdocs.removeAllItems();
@@ -204,7 +218,7 @@ public class Patienttab extends JFrame implements ActionListener {
             avaibdocs.setSelectedItem(previousSelection);
         }
     }
-    
+
     @Override
     public void actionPerformed(ActionEvent e) {
         if (e.getSource() == btnBack) {
@@ -221,7 +235,6 @@ public class Patienttab extends JFrame implements ActionListener {
             }
         }
         else if (e.getSource() == btnAdd) {
-            String idText = patIDF.getText().trim();
             String name = patnameF.getText().trim();
             String ageText = patageF.getText().trim();
             String gender = (String) patgender.getSelectedItem();
@@ -229,42 +242,44 @@ public class Patienttab extends JFrame implements ActionListener {
             String history = medhistF.getText().trim();
             String date = apptschedF.getText().trim();
             String doctor = (String) avaibdocs.getSelectedItem();
+            String urgency = (String) urgencyBox.getSelectedItem();
 
-            if (idText.isEmpty() || name.isEmpty() || ageText.isEmpty() || concern.isEmpty() || date.isEmpty() || gender.isEmpty()) {
-                JOptionPane.showMessageDialog(this, "Please fill in all required fields, including Patient ID.");
+            if (name.isEmpty() || ageText.isEmpty() || concern.isEmpty() || date.isEmpty() || gender.isEmpty()) {
+                JOptionPane.showMessageDialog(this, "Please fill in all required fields.");
+                return;
+            }
+
+            // Validate date format (MySQL DATE expects YYYY-MM-DD)
+            try {
+                java.time.LocalDate.parse(date);
+            } catch (java.time.format.DateTimeParseException ex) {
+                JOptionPane.showMessageDialog(this,
+                    "Date must be in YYYY-MM-DD format (e.g. 2026-11-20).",
+                    "Invalid Date",
+                    JOptionPane.ERROR_MESSAGE);
                 return;
             }
 
             try {
-                int patientId = Integer.parseInt(idText);
                 int patientAge = Integer.parseInt(ageText);
+                int dummyPatientId = (int)(Math.random() * 90000) + 10000;
 
-                if (systemDataStructures.verifyPatientExists(patientId)) {
-                    JOptionPane.showMessageDialog(this, 
-                        "A patient with ID " + patientId + " already exists!", 
-                        "Duplicate Record Error", 
-                        JOptionPane.WARNING_MESSAGE);
-                    return; 
-                }
-
-                // 1. Save Patient to DSA/Memory structure
-                Patient newPatient = new Patient(patientId, name, patientAge, gender);
+                Patient newPatient = new Patient(dummyPatientId, name, patientAge, gender);
                 systemDataStructures.addPatient(newPatient);
 
-                // 2. CRITICAL: Save Appointment to MySQL Database via AppointmentDAO
                 Appointments newAppt = new Appointments(
-                    name, 
-                    patientAge, 
-                    gender, 
-                    idText, 
-                    (doctor == null) ? "Not selected" : doctor, 
-                    "General", // Default specialty
-                    history, 
-                    concern, 
-                    date, 
-                    1 // Default urgency level
+                    name,
+                    patientAge,
+                    gender,
+                    String.valueOf(dummyPatientId),
+                    (doctor == null) ? "Not selected" : doctor,
+                    "General",
+                    history,
+                    concern,
+                    date,
+                    urgency
                 );
-                
+
                 AppointmentDAO dao = new AppointmentDAO();
                 boolean dbSuccess = dao.insert(newAppt);
 
@@ -272,29 +287,29 @@ public class Patienttab extends JFrame implements ActionListener {
                     JOptionPane.showMessageDialog(this, "Warning: Patient added locally, but failed to save to MySQL database.");
                 }
 
-                // 3. Update visual table model
                 patres.addRow(new Object[]{
-                    name, 
+                    name,
                     ageText,
                     gender,
-                    date, 
+                    date,
+                    urgency,
                     (doctor == null || doctor.isEmpty()) ? "Not selected" : doctor
                 });
 
-                // Clear input fields after successful addition
-                patIDF.setText("");
                 patnameF.setText("");
                 patageF.setText("");
                 patillnessF.setText("");
                 medhistF.setText("");
                 apptschedF.setText("");
 
-                JOptionPane.showMessageDialog(this, "Appointment added and saved to database successfully!");
+                if (dbSuccess) {
+                    JOptionPane.showMessageDialog(this, "Appointment added and saved to database successfully!");
+                }
 
             } catch (NumberFormatException ex) {
-                JOptionPane.showMessageDialog(this, 
-                    "Patient ID and Age must be valid numbers.", 
-                    "Invalid Input", 
+                JOptionPane.showMessageDialog(this,
+                    "Patient Age must be a valid number.",
+                    "Invalid Input",
                     JOptionPane.ERROR_MESSAGE);
             }
         }

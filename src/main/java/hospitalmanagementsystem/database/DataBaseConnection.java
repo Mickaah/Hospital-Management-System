@@ -1,4 +1,3 @@
-
 package hospitalmanagementsystem.database;
 
 import java.sql.Connection;
@@ -8,20 +7,17 @@ import java.sql.Statement;
 
 public class DataBaseConnection {
 
-    private static final String URL =
-            "jdbc:mysql://localhost:3306/doctor_accs?useSSL=false&serverTimezone=UTC";
+    // Changed doctor_accs to hospital_db here:
+    private static final String URL = "jdbc:mysql://localhost:3306/hospital_db?useSSL=false&serverTimezone=UTC";
 
     private static final String USER = "root";
     private static final String PASSWORD = "";
 
-    // Connects to the MySQL database
     public static Connection getConnection() throws SQLException {
         return DriverManager.getConnection(URL, USER, PASSWORD);
     }
 
-    // Creates the required tables if they do not exist
     public static boolean initialize() {
-
         String patients = "CREATE TABLE IF NOT EXISTS patients ("
                 + "id INT AUTO_INCREMENT PRIMARY KEY, "
                 + "name VARCHAR(100) NOT NULL, "
@@ -48,16 +44,13 @@ public class DataBaseConnection {
             st.execute(patients);
             st.execute(appointments);
 
-            System.out.println("Database connected successfully!");
+            System.out.println("Connected to new 'hospital_db' database successfully!");
             System.out.println("Tables initialized successfully!");
 
             return true;
 
         } catch (SQLException e) {
-
-            System.err.println("Database initialization failed: "
-                    + e.getMessage());
-
+            System.err.println("Database initialization failed: " + e.getMessage());
             return false;
         }
     }
