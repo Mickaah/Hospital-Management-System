@@ -84,7 +84,7 @@ public class Appointmenttab extends JFrame implements ActionListener {
         model.addColumn("Age");
         model.addColumn("Gender");
         model.addColumn("Doctor");
-        model.addColumn("Specialty"); // shows the doctor's specialty for each appointment
+        model.addColumn("Specialty"); // shows the doctor's specialty for each appointment (Currently 4 docs only)
         model.addColumn("Date");
         model.addColumn("Urgency");
         model.addColumn("Concern");
